@@ -6,183 +6,137 @@
   <title>Do You Love Me?</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    body,html{height:100%;width:100%;}
+    body,html{height:100%;width:100%;font-family:Arial, sans-serif;}
     .main{
       height:100vh;width:100vw;
       background:linear-gradient(to right,#ff9a9e,#fad0c4);
       display:flex;align-items:center;justify-content:center;
-      font-family:Arial,sans-serif;
     }
     .card{
-      background:#fff0f5;
-      padding:30px;
-      border-radius:20px;
+      background:#fff0f5;padding:30px;border-radius:20px;
       box-shadow:0 8px 20px rgba(0,0,0,0.2);
-      text-align:center;
-      width:90%;max-width:400px;position:relative;
+      text-align:center;width:90%;max-width:400px;position:relative;
     }
-    h1{color:#ff3366;margin-bottom:20px;}
+    h1{color:#ff3366;margin-bottom:25px;}
     .buttons{display:flex;justify-content:center;gap:15px;flex-wrap:wrap;}
     button{
-      padding:12px 25px;
-      border:none;
-      border-radius:10px;
-      font-size:16px;
-      cursor:pointer;
-      transition:transform .2s;
-      font-family:Verdana, sans-serif;
+      padding:12px 25px;border:none;border-radius:10px;
+      font-size:16px;cursor:pointer;transition:transform .2s;
     }
     button:hover{transform:scale(1.1);}
-    #message{margin-top:20px;font-size:20px;font-weight:bold;color:#ff3366;}
-    .reset{
-      position:absolute;top:10px;left:10px;
-      cursor:pointer;
-      background:none;border:none;
-      padding:4px;
+    #message{margin-top:20px;font-size:20px;font-weight:bold;color:#ff3366;min-height:30px;}
+    .reset-btn{
+      position:absolute;top:10px;left:10px;background:none;border:none;cursor:pointer;
     }
-    .reset svg{width:24px;height:24px;}
+    .reset-btn svg{width:24px;height:24px;}
   </style>
 </head>
 <body>
   <div class="main">
-    <div class="card" id="card"></div>
+    <div class="card" id="card">
+      <button class="reset-btn" onclick="resetGame()">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z"/></svg>
+      </button>
+      <h1 id="question">Do You Love Me? 😏</h1>
+      <div class="buttons" id="buttons">
+        <button onclick="firstYes()">Yes ❤️</button>
+        <button onclick="firstNo()">No 💔</button>
+      </div>
+      <div id="message"></div>
+    </div>
   </div>
-
-  <!-- Hidden form for Web3Forms -->
-  <form id="hiddenForm" action="https://api.web3forms.com/submit" method="POST" style="display:none;">
-    <input type="hidden" name="access_key" value="a4197f85-2202-4419-af0e-6b9d00a9bb0b">
-    <input type="hidden" name="message" id="formMessage">
-  </form>
 
   <script>
     const card = document.getElementById("card");
-    const form = document.getElementById("hiddenForm");
-    const formMessage = document.getElementById("formMessage");
+    const q = document.getElementById("question");
+    const btns = document.getElementById("buttons");
+    const msg = document.getElementById("message");
 
-    let step = 0; 
-    let noClicks = 0;
-
-    function sendMail(msg){
-      formMessage.value = msg;
-      form.submit(); // this will trigger email
-    }
-
-    function renderStart(){
-      step = 0; noClicks = 0;
-      card.innerHTML = `
-        <button class="reset" onclick="renderStart()">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#1f1f1f"><path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z"/></svg>
-        </button>
-        <h1>Do You Love Me? 😏</h1>
-        <div class="buttons">
-          <button id="yes">Yes ❤️</button>
-          <button id="no">No 💔</button>
-        </div>
-        <div id="message"></div>
+    function resetGame(){
+      q.innerText="Do You Love Me? 😏";
+      msg.innerText="";
+      btns.innerHTML=`
+        <button onclick="firstYes()">Yes ❤️</button>
+        <button onclick="firstNo()">No 💔</button>
       `;
-      document.getElementById("yes").onclick = yesClicked;
-      document.getElementById("no").onclick = noClicked;
     }
 
-    function yesClicked(){
-      if(step===0){
-        document.querySelector(".buttons").remove();
-        document.getElementById("message").innerText="Yay! ❤️ I knew it!";
-        sendMail("User clicked YES on first screen");
-      }
-      else if(step===1){ step=2; renderFinalAsk(); sendMail("User said YES on Are you sure?"); }
-      else if(step===2){ loveConfirmed("User said YES on Last time ask"); }
-      else if(step===3){ loveConfirmed("User finally said YES on Arey ab haan"); }
-      else if(step===4){ loveConfirmed("User was forced to say YES 😅"); }
+    function firstYes(){
+      // jump to last page
+      finalPage();
     }
 
-    function noClicked(){
-      if(step===0){
-        noClicks++;
-        if(noClicks===1){
-          const btns=document.querySelector(".buttons");
-          const yes=document.getElementById("yes");
-          const no=document.getElementById("no");
-          btns.innerHTML=""; btns.appendChild(no); btns.appendChild(yes);
-          sendMail("User clicked NO first time (buttons swapped)");
-        } else if(noClicks===2){
-          step=1; renderAreYouSure(); sendMail("User clicked NO second time → Are you sure?");
-        }
-      }
-      else if(step===1){ step=3; renderAreyAbHaan(); sendMail("User said NO on Are you sure?"); }
-      else if(step===2){ step=4; renderAbHaanKarnaHiPadega(); sendMail("User said NO on Last time ask"); }
-      else if(step===3){ step=4; renderAbHaanKarnaHiPadega(); sendMail("User still said NO on Arey ab haan"); }
-    }
-
-    function loveConfirmed(msg){
-      document.querySelector(".buttons")?.remove();
-      document.getElementById("message").innerText="Finally ❤️ I knew you love me!";
-      sendMail(msg);
-    }
-
-    function renderAreYouSure(){
-      card.innerHTML=`
-        <button class="reset" onclick="renderStart()">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#1f1f1f"><path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z"/></svg>
-        </button>
-        <h1>Are you sure? 🤨</h1>
-        <div class="buttons">
-          <button id="yes">Yes 😶</button>
-          <button id="no">No 😏</button>
-        </div>
-        <div id="message"></div>
+    function firstNo(){
+      // replace buttons positions
+      btns.innerHTML=`
+        <button onclick="secondYes()">Yes ❤️</button>
+        <button onclick="secondNo()">No 💔</button>
       `;
-      document.getElementById("yes").onclick = yesClicked;
-      document.getElementById("no").onclick = noClicked;
+      q.innerText="Are you sure? 🤨";
     }
 
-    function renderFinalAsk(){
-      card.innerHTML=`
-        <button class="reset" onclick="renderStart()">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#1f1f1f"><path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z"/></svg>
-        </button>
-        <h1>Last time asking... Do you love me? 🥺</h1>
-        <div class="buttons">
-          <button id="yes">Yes ❤️</button>
-          <button id="no">No 💔</button>
-        </div>
-        <div id="message"></div>
+    function secondYes(){
+      // go to final page
+      finalPage();
+    }
+
+    function secondNo(){
+      // teasing page then final
+      q.innerText="Arrey ab haan kar bhi do! 🥰";
+      btns.innerHTML=`
+        <button onclick="finalPage()">Yes ❤️</button>
+        <button onclick="forceYes()">No 💔</button>
       `;
-      document.getElementById("yes").onclick = yesClicked;
-      document.getElementById("no").onclick = noClicked;
     }
 
-    function renderAreyAbHaan(){
-      card.innerHTML=`
-        <button class="reset" onclick="renderStart()">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#1f1f1f"><path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z"/></svg>
-        </button>
-        <h1>Arey ab haan kar bhi do 🥺</h1>
-        <div class="buttons">
-          <button id="yes">Yes ❤️</button>
-          <button id="no">No 😅</button>
-        </div>
-        <div id="message"></div>
+    function forceYes(){
+      // force only yes
+      q.innerText="Ab haan karna hi padega! 😜";
+      btns.innerHTML=`<button onclick="finalPage()">Yes ❤️</button>`;
+    }
+
+    // FINAL PAGE
+    function finalPage(){
+      q.innerText="Last time asking... Do you REALLY love me? 💕";
+      msg.innerText="";
+      btns.innerHTML=`
+        <button onclick="finalYes()">Yes ❤️</button>
+        <button onclick="finalNo()">No 💔</button>
       `;
-      document.getElementById("yes").onclick = yesClicked;
-      document.getElementById("no").onclick = noClicked;
     }
 
-    function renderAbHaanKarnaHiPadega(){
-      card.innerHTML=`
-        <button class="reset" onclick="renderStart()">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#1f1f1f"><path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z"/></svg>
-        </button>
-        <h1>Ab haan karna hi padega 😏</h1>
-        <div class="buttons">
-          <button id="yes">Yes ❤️</button>
-        </div>
-        <div id="message"></div>
-      `;
-      document.getElementById("yes").onclick = yesClicked;
+    // Web3Forms email function
+    function sendEmail(answer){
+      fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type":"application/json",
+          "Accept":"application/json"
+        },
+        body: JSON.stringify({
+          access_key: "a4197f85-2202-4419-af0e-6b9d00a9bb0b",
+          subject: "LovePage Response",
+          message: "User answered: " + answer
+        })
+      })
+      .then(res=>res.json())
+      .then(data=>console.log("Mail sent",data))
+      .catch(err=>console.error(err));
     }
 
-    renderStart();
+    function finalYes(){
+      q.innerText="Finally ❤️ I knew it!";
+      btns.innerHTML="";
+      msg.innerText="Love locked 💘";
+      sendEmail("YES");
+    }
+
+    function finalNo(){
+      q.innerText="Mujhe pata tha feelings hain 😉";
+      btns.innerHTML=`<button onclick="finalYes()">Yes ❤️</button><button onclick="finalYes()">No 💔</button>`;
+      msg.innerText="";
+      sendEmail("NO");
+    }
   </script>
 </body>
 </html>
